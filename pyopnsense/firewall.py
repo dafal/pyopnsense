@@ -16,6 +16,7 @@
 # along with pyopnsense. If not, see <http://www.gnu.org/licenses/>.
 
 from pyopnsense import client
+from typing import Optional
 
 
 class FirewallClient(client.OPNClient):
@@ -47,13 +48,20 @@ class FirewallClient(client.OPNClient):
 
         return self._get(f"firewall/filter/getRule/{uuid}")
 
-    def toggle_rule(self, uuid):
+    def toggle_rule(self, uuid: str, enabled: Optional[int] = None):
         """Function to toggle a specific rule by uuid
 
         :returns: A dict representing the new status of the rule
         :rtype: dict
         """
-        return self._post(f"firewall/filter/toggleRule/{uuid}", "")
+        if enabled is None:
+            url = f"firewall/filter/toggleRule/{uuid}"
+        elif enabled in (0, 1):
+            url = f"firewall/filter/toggleRule/{uuid}/{enabled}"
+        else:
+            raise ValueError("enabled must be 0, 1 or None")
+
+        return self._post(url, "")
 
     def apply_rules(self):
         """Function to apply changes to rules."""
